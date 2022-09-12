@@ -60,6 +60,8 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
     Sub_Err : list
         List of subspace errors between consecutive subspaces
         
+    REMARKS
+    -------
     Original code from:
     https://github.com/HexuanLiu/WDA_eig
     modified to use Acc_SK instead of SK
