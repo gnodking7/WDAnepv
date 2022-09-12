@@ -3,6 +3,15 @@
 Ratio Trace formulated
 Wasserstein Discriminant Analysis (WDA)
 Nonlinear Eigenvalue based Algorithm: WDAeig
+From:
+@article{liu2020ratio,
+  title={Ratio trace formulation of wasserstein discriminant analysis},
+  author={Liu, Hexuan and Cai, Yunfeng and Chen, You-Lin and Li, Ping},
+  journal={Advances in Neural Information Processing Systems},
+  volume={33},
+  pages={16821--16832},
+  year={2020}
+}
 =============================================
 """
 
@@ -50,6 +59,11 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
         List of ndarray projections
     Sub_Err : list
         List of subspace errors between consecutive subspaces
+        
+    Original code from:
+    https://github.com/HexuanLiu/WDA_eig
+    modified to use Acc_SK instead of SK
+    and returns more information
     """
 
     mx = np.mean(X)
