@@ -44,8 +44,6 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
         Optimal transportation matrix for the given parameters
     proj : callable
         Projection function including mean centering
-    obj  : list
-        List of angles s_k to measure the distance between consecutive subspaces
     Q    : list
         List of WDA objective values
     PROJ : list
@@ -97,21 +95,18 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
         Pinv = np.linalg.inv(P.T.dot(P))
         Pninv = np.linalg.inv(Pnew.T.dot(Pnew))
 
-        angle = np.linalg.norm((P.dot(Pinv.dot(P.T))-Pnew.dot(Pninv.dot(Pnew.T))), 2)
-
-        obj.append(angle)
-        if (verbose==1):
-            print("Iter: % 2d, angle: % 2.8f" %(it, angle))
-
         err = linalg.subspace_angles(P, Pnew)[0]
         Sub_Err.append(err)
+        if (verbose==1):
+            print("Iter: % 2d, err: % 2.8f" %(it, err))
+        
         PROJ.append(P)
         q = np.trace(np.matmul(P.T, np.matmul(loss_b, P))) / np.trace(np.matmul(P.T, np.matmul(loss_w, P)))
         Q.append(q)
 
         P=Pnew
 
-        if (abs(angle)< 1e-3):
+        if (abs(err)< 1e-3):
             break
 
     Popt = P
