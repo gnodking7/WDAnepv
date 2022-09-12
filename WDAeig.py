@@ -122,7 +122,7 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
 
         P=Pnew
 
-        if (abs(err)< 1e-3):
+        if (abs(err)< 1e-5):
             break
 
     Popt = P
