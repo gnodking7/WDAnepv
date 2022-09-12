@@ -43,7 +43,7 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
     Breg: float, optional, default set to 0
         Regularization for the B matrix in the denominator to make B positive definite
     k: int, optional, default set to 10
-        Number of Sinkhorn iterations
+        Number of Acc_SK iterations
     maxiter: int, optional, default set to 100
         Number of maximum number of iterations
 
@@ -53,7 +53,7 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
         Optimal transportation matrix for the given parameters
     proj : callable
         Projection function including mean centering
-    Q    : list
+    WDA_Val    : list
         List of WDA objective values
     PROJ : list
         List of ndarray projections
@@ -78,11 +78,9 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
     wc = [np.ones((x.shape[0]), dtype=np.float32) / x.shape[0] for x in xc]
     P=P0
 
-    obj = []
-
     Sub_Err = []
     PROJ = []
-    Q = []
+    WDA_Val = []
 
     for it in range(maxiter):
         loss_b = np.zeros((d,d))
@@ -118,7 +116,7 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
         
         PROJ.append(P)
         q = np.trace(np.matmul(P.T, np.matmul(loss_b, P))) / np.trace(np.matmul(P.T, np.matmul(loss_w, P)))
-        Q.append(q)
+        WDA_Val.append(q)
 
         P=Pnew
 
@@ -130,4 +128,4 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
     def proj(X):
         return (X - mx.reshape((1, -1))).dot(Popt)
 
-    return Popt, proj, obj, Q, PROJ, Sub_Err
+    return Popt, proj, WDA_Val, PROJ, Sub_Err
