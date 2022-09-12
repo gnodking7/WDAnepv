@@ -61,6 +61,8 @@ def SK(K, tol = 1e-5, maxitr = 50):
     """
     Performs Sinkhorn-Knopp Iteration on a positive matrix K to obtain
     positive vectors u and v such that diag(u) * K * diag(v) is normalized doubly stochastic
+    i.e., the sum of rows and the sum of columns of the resulting matrix are
+    vectors 1/n and 1/m, respectively
 
     Article on Sinkhorn iteration:
     @article{sinkhorn1967diagonal,
@@ -109,6 +111,8 @@ def Acc_SK(K, tol = 1e-5, maxitr = 50):
     """
     Performs Accelerated Sinkhorn-Knopp Iteration on a positive matrix K to obtain
     positive vectors u and v such that diag(u) * K * diag(v) is normalized doubly stochastic
+    i.e., the sum of rows and the sum of columns of the resulting matrix are
+    vectors 1/n and 1/m, respectively
 
     Article on Acclerated SK iteration:
     @article{aristodemo2020accelerating,
@@ -165,7 +169,8 @@ def Acc_SK(K, tol = 1e-5, maxitr = 50):
 def pair_tensor(T, X, Y):
     """
     Computes the sum of rank one matrices
-        \sum_{ij}T(i,j) * X(i,:)' * Y(j,:)
+        \sum_{ij}T(i,j) * [X(i,:) - Y(j,:)] * [X(i,:) - Y(j,:)]'
+    efficiently by matrix-matrix multiplication
 
     PARAMETERS
     ----------
