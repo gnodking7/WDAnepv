@@ -2,6 +2,17 @@
 =============================================
 Wasserstein Discriminant Analysis (WDA)
 Gradient Descent based Algorithm: WDAgd
+From:
+@article{flamary2018wasserstein,
+  title={Wasserstein discriminant analysis},
+  author={Flamary, R{\'e}mi and Cuturi, Marco and Courty, Nicolas and Rakotomamonjy, Alain},
+  journal={Machine Learning},
+  volume={107},
+  number={12},
+  pages={1923--1945},
+  year={2018},
+  publisher={Springer}
+}
 =============================================
 """
 
@@ -16,9 +27,9 @@ import WDA_subfunc as sub
 
 ###########################################################################
 
-def wda_gd(X, y, p=2, reg=1, k=10, maxiter=100, P0=None, verbosity=0):
+def wda_gd(X, y, p, reg, P0, k=10, maxiter=100, verbosity=0):
     """
-    Wasserstein Discriminant Analysis :ref:`[11] <references-wda>`
+    Wasserstein Discriminant Analysis
 
     The function solves the following optimization problem:
 
@@ -38,14 +49,14 @@ def wda_gd(X, y, p=2, reg=1, k=10, maxiter=100, P0=None, verbosity=0):
         Training samples.
     y : ndarray, shape (n,)
         Labels for training samples.
-    p : int, optional
+    p : int
         Size of dimensionnality reduction.
-    reg : float, optional
+    reg : float
         Regularization term >0 (entropic regularization)
-    k : int, optional, default set to 10
-        Number of Sinkhorn iterations
     P0 : ndarray, shape (d, p)
         Initial starting point for projection.
+    k : int, optional, default set to 10
+        Number of Sinkhorn iterations
     verbose : int, optional
         Print information along iterations.
 
@@ -60,18 +71,12 @@ def wda_gd(X, y, p=2, reg=1, k=10, maxiter=100, P0=None, verbosity=0):
     PROJ : list
            List of ndarray projections
 
-    .. _references-wda:
-    REFERENCES
-    ----------
-    .. [11] Flamary, R., Cuturi, M., Courty, N., & Rakotomamonjy, A. (2016).
-            Wasserstein Discriminant Analysis. arXiv preprint arXiv:1608.08063.
-
     REMARKS
     -------
-    The original codes provided by the authors of the reference is outdated.
+    Original code from:
+    https://pythonot.github.io/_modules/ot/dr.html#wda
+    is outdated with respect to the current version of Pymanopt (2.0.1)
     The following codes are written in accordance with the latest Pymanopt package.
-        - Dong Min Roh -
-        June, 2022
     """
 
     mx = np.mean(X)
