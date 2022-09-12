@@ -56,13 +56,13 @@ def wda_gd(X, y, p, reg, P0, k=10, maxiter=100, verbosity=0):
     P0 : ndarray, shape (d, p)
         Initial starting point for projection.
     k : int, optional, default set to 10
-        Number of Sinkhorn iterations
+        Number of Acc_SK iterations
     verbose : int, optional
         Print information along iterations.
 
     RETURNS
     -------
-    P : ndarray, shape (d, p)
+    Popt : ndarray, shape (d, p)
         Optimal transportation matrix for the given parameters
     proj : callable
         Projection function including mean centering.
