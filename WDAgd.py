@@ -98,7 +98,7 @@ def wda_gd(X, y, p, reg, P0, k=10, maxiter=100, verbosity=0):
                 pxj = np.matmul(xj, P)
                 M = sub.dist(pxi, pxj)
                 K = np.exp(-reg * M)
-                u, v = sub.Acc_SK(K, 1e-5, k)
+                u, v, Err = sub.Acc_SK(K, 1e-5, k)
                 T = u.reshape((K.shape[0], 1)) * K * v.reshape((1, K.shape[1]))
                 if j == 0:
                     loss_w += np.sum(T * M)
