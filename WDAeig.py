@@ -91,7 +91,7 @@ def wda_eig(X, y, p, reg, P0, Breg=0, k=10, maxiter=100, verbose=0):
                 pxj = np.dot(xj, P)
                 M = sub.dist(pxi, pxj)
                 K = np.exp(-reg * M)
-                u, v = sub.Acc_SK(K, 1e-5, k)
+                u, v, Err = sub.Acc_SK(K, 1e-5, k)
                 T = u.reshape((K.shape[0], 1)) * K * v.reshape((1, K.shape[1]))
                 if j==0:
                     loss_w += sub.pair_tensor(T, xi, xj)
