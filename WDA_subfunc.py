@@ -91,21 +91,25 @@ def SK(K, tol = 1e-5, maxitr = 50):
                 Optimal left vector
     v :         ndarray, shape (m,)
                 Optimal right vector
+    Err :       list
+                List of 2-norm errors between consecutive v vectors
     """
 
     n, m = K.shape[0], K.shape[1]
+    Err = []
     vk = np.ones(m) / m # initial point
     # updates
     for i in range(maxitr):
         uk = np.ones(n) / (np.dot(K, vk)) / n
         new_vk = np.ones(m) / (np.dot(K.T, uk)) / m
         v_err = np.linalg.norm(new_vk - vk)   # error
+        Err.append(v_err)
         vk = new_vk
         if v_err < tol:
             break
     u = uk
     v = vk
-    return u, v
+    return u, v, Err
 
 def Acc_SK(K, tol = 1e-5, maxitr = 50):
     """
@@ -141,9 +145,12 @@ def Acc_SK(K, tol = 1e-5, maxitr = 50):
                 Optimal left vector
     v :         ndarray, shape (m,)
                 Optimal right vector
+    Err :       list
+                List of 2-norm errors between consecutive v vectors
     """
 
     n, m = K.shape[0], K.shape[1]
+    Err = []
     vk = np.ones(m) / m # initial point
     # Functions
     U = lambda x : np.ones(len(x)) / x
@@ -159,12 +166,13 @@ def Acc_SK(K, tol = 1e-5, maxitr = 50):
         idx = np.argsort(-D)
         new_vk = V[:, idx[0]]
         v_err = np.linalg.norm(new_vk - vk)   # error
+        Err.append(v_err)
         if v_err < tol:
             break
         vk = new_vk
     u = np.ones(n) / (np.matmul(K, vk)) / n
     v = vk
-    return u, v
+    return u, v, Err
 
 def pair_tensor(T, X, Y):
     """
