@@ -161,7 +161,7 @@ def wda_nepv(X, y, p, reg, P0, Breg=0, k=10, maxitr=100, tol=1e-5):
             for j, xj in enumerate(X_c[i:]):
                 pxj = np.matmul(xj, P)
                 M = sub.dist(pxi, pxj)
-                K = np.exp(-lamb * M)
+                K = np.exp(-reg * M)
                 u, v, Err = sub.Acc_SK(K, 1e-5, k)
                 T = u.reshape((K.shape[0], 1)) * K * v.reshape((1, K.shape[1]))
                 if j == 0:
