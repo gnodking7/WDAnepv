@@ -168,7 +168,7 @@ def wda_nepv(X, y, p, reg, P0, Breg=0, k=10, maxitr=100, tol=1e-5):
                     B += sub.pair_tensor(T, xi, xj)
                 else:
                     A += sub.pair_tensor(T, xi, xj)
-        B += e * np.eye(d)  # perturb
+        B += Breg * np.eye(d)  # perturb
         # store WDA value
         A = (A + A.T) / 2
         B = (B + B.T) / 2
