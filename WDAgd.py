@@ -106,7 +106,6 @@ def wda_gd(X, y, p, reg, P0, k=10, maxiter=100, verbosity=0):
                     loss_b += np.sum(T * M)
         # loss inversed because minimization
         return loss_w / loss_b
-
     problem = pymanopt.Problem(manifold, cost)
 
     # Steepest Descent

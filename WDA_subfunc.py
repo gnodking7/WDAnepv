@@ -8,7 +8,7 @@ Subfunctions shared by WDAgd, WDAeig, WDAnepv
 # Author: Dong Min Roh <droh@ucdavis.edu>
 #
 
-import numpy as np
+import autograd.numpy as np
 from scipy import linalg
 
 ###########################################################################
@@ -117,7 +117,6 @@ def Acc_SK(K, tol = 1e-5, maxitr = 50):
     positive vectors u and v such that diag(u) * K * diag(v) is normalized doubly stochastic
     i.e., the sum of rows and the sum of columns of the resulting matrix are
     vectors 1/n and 1/m, respectively
-
     Article on Acclerated SK iteration:
     @article{aristodemo2020accelerating,
         title={Accelerating the Sinkhorn--Knopp iteration by Arnoldi-type methods},
@@ -129,7 +128,6 @@ def Acc_SK(K, tol = 1e-5, maxitr = 50):
         year={2020},
         publisher={Springer}
     }
-
     PARAMETERS
     ----------
     K :         ndarray, shape (n, m)
@@ -138,7 +136,6 @@ def Acc_SK(K, tol = 1e-5, maxitr = 50):
                 Tolerance parameter for stopping criteria
     maxitr :    int, optional, default set to 50
                 Number of maximum number of iterations
-
     RETURNS
     -------
     u :         ndarray, shape (n,)
@@ -152,27 +149,24 @@ def Acc_SK(K, tol = 1e-5, maxitr = 50):
     n, m = K.shape[0], K.shape[1]
     Err = []
     vk = np.ones(m) / m # initial point
-    # Functions
-    U = lambda x : np.ones(len(x)) / x
-    S = lambda x : U(np.dot(K, x))
-    R = lambda x : (n / m) * U(np.dot(K.T, S(x)))
-    J = lambda x : (m / n) * np.matmul((R(x) ** 2)[:, None] * K.T * (S(x) ** 2), K)
     # updates
     for i in range(maxitr):
-        Jk = J(vk)
-        D, V = linalg.eig(Jk)
+        S = np.ones(n) / np.matmul(K, vk)
+        R = (n/m) * np.ones(m) / np.matmul(K.T, S)
+        J = (m/n) * np.matmul((S ** 2)[:, None].T * ((R **2)[:, None] * K.T), K)
+        D, V = np.linalg.eig(J)
         D = np.real(D)
         V = np.real(V)
         idx = np.argsort(-D)
         new_vk = V[:, idx[0]]
         v_err = np.linalg.norm(new_vk - vk)   # error
         Err.append(v_err)
+        vk = new_vk
         if v_err < tol:
             break
-        vk = new_vk
     u = np.ones(n) / (np.matmul(K, vk)) / n
     v = vk
-    return u, v, Err
+    return u, v, v_err
 
 def pair_tensor(T, X, Y):
     """
