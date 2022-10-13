@@ -179,8 +179,7 @@ def load_uci(name):
     if name == 'ionosphere':
         data = data[:, 2:]
 
-    # Append additional components & standardize
-    data = np.hstack((data, np.sqrt(2) * np.random.randn(n, 100) + 1))
+    # Standardize
     data = (data - np.mean(data, 0)) / np.std(data, 0)  # standardize
 
     # Split data evenly between training and testing
