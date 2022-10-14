@@ -150,7 +150,6 @@ def load_uci(name):
       UCI datasets from https://archive.ics.uci.edu/ml/index.php
       Consider datasets are
                 Wine, Iris, Vehicle, Credit, Ionosphere, LSVT
-      Except for the LSVT dataset, 100 additional components drawn from Gaussian distribution N(1, 2) are appended
       50% training and 50% testing by random split
 
     PARAMETERS
