@@ -61,9 +61,9 @@ For the matrix $\mathbf{K}^{c,c'}:=\Big([e^{-\lambda\\|\mathbf{P}^T\mathbf{x}_i^
 $$\mathbf{T}^{c,c'}(\mathbf{P})=\mathcal{D}(\mathbf{u})\mathbf{K}\mathcal{D}(\mathbf{v})$$
 where $\mathcal{D}(\cdot)$ denotes a diagonal matrix with vector $\cdot$ as the diagonal.
 
-Such matrix balancing problem can be solved by Sinkhorn-Knopp (SK) algorithm[2] or its accelerated variant (Acc_SK) based on a vector-dependent nonlinear eigenvalue problem (NEPv)[3].
+Such matrix balancing problem can be solved by Sinkhorn-Knopp (SK) algorithm[2] or its accelerated variant (Acc-SK) based on a vector-dependent nonlinear eigenvalue problem (NEPv)[3].
 
-Instead of SK, WDA-nepv uses Acc_SK to compute the optimal transport matrices. In Example 1, we show that SK algorithm is subject to slow convergence or even non-convergence while Acc_SK converges is just a few iterations.
+Instead of SK, WDA-nepv uses Acc-SK to compute the optimal transport matrices. In Example 1, we show that SK algorithm is subject to slow convergence or even non-convergence while Acc-SK converges is just a few iterations.
 
 ### Other existing WDA algorithms
 
@@ -88,23 +88,39 @@ $$\mathbf{P}\_{k+1} = \mbox{argmax}\_{\mathbf{P}^T\mathbf{P}=I_p}
 \frac{\mbox{Tr}(\mathbf{P}^T\mathbf{C}_b(\mathbf{P}_k)\mathbf{P})}
 {\mbox{Tr}(\mathbf{P}^T\mathbf{C}_w(\mathbf{P}_k)\mathbf{P})}$$
 
+The following are important distinctions of WDA-nepv from the existing algorithms.
+
+* WDA-nepv computes the optimal transport matrices by Acc-SK algorithm, which is more efficient and more accurate than SK algorithm. A NEPv is solved in Acc-SK algorithm.
+* The cross-covariance matrices $\mathbf{C}_b(\mathbf{P}_k)$ and $\mathbf{C}_w(\mathbf{P}_k)$ are reformulated as matrix-matrix multiplications
+$$\mathbf{C}_b(\mathbf{P}_k) =\widehat{\mathbf{C}}_b(\mathbf{P}_k)\widehat{\mathbf{C}}^T_b(\mathbf{P}_k)\quad\mbox{and}\quad\mathbf{C}_w(\mathbf{P}_k)=\widehat{\mathbf{C}}_w(\mathbf{P}_k) \widehat{\mathbf{C}}^T_w(\mathbf{P}_k)$$
+where $\widehat{\mathbf{C}}_b(\mathbf{P}_k)$ and $\widehat{\mathbf{C}}_w(\mathbf{P}_k)$ have columns 
+$$\sqrt{{T}\_{ij}^{c,c'}(\mathbf{P}_k)}(\mathbf{x}_i^c-\mathbf{x}_j^{c'})\quad\mbox{and}\quad\sqrt{{T}\_{ij}^{c,c}(\mathbf{P}_k)}(\mathbf{x}_i^c-\mathbf{x}_j^{c})$$
+respectively. As level-3 BLAS subroutines, the matrix-matrix multiplications are far more efficient than the original double sums of outer products, which is level-2 BLAS subroutines. See [44] for detailed explanations on level-3 BLAS.
+* After the cross-covariance matrices $\mathbf{C}_b(\mathbf{P}_k)$ and $\mathbf{C}_w(\mathbf{P}_k)$ are efficiently computed by level-3 BLAS, WDA-nepv solves a trace-ratio optimization. Note that, mathematically, this is equivalent to solving LDA. Another NEPv is associated with trace-ratio optimization [55].
+
+Both NEPvs (one for Acc-SK and another for trace-ratio) are solved efficiently by the self-consistent field (SCF) iteration, which iteratively fixes the vector-dependence of the matrices and solves the standard eigenvalue problem. See [1] for explicit formulations of the NEPvs and detailed explanation of the implementation of SCF iterations.
+
+In contrast to the existing algorithms,
+```
+WDA-nepv is derivative-free and surrogate-model-free
+```
+Therefore, WDA-nepv is more efficient by avoiding the heavy costs of computing the derivaties, and it is more accurate by solving WDA directly.
+
+Moreover, in implementation, WDA-nepv is more efficient since
+```
+WDA-nepv uses Acc-SK algorithm and level-3 BLAS subroutines
+```
 
 
-WDA-nepv is a bi-level nonlinear eigenvector (NEPv) algorithm:
+## What are in this Github repository?
 
-* A NEPv for computing the optimal transport matrices, using the acclerated Sinkhorn-Knopp (Acc-SK) algorithm [3].
-* A NEPv for computing the trace ratio problems.
-
-Both NEPvs are solved efficiently by the self-consistent field (SCF) iteration.
-
-In essence, WDAnepv updates the projection matrix by
-
-$$\mathbf{P}\_{k+1} = \mbox{argmax}\_{\mathbf{P}^T\mathbf{P}=I_p}
-\frac{\mbox{Tr}(\mathbf{P}^T\mathbf{C}_b(\mathbf{P}_k)\mathbf{P})}
-{\mbox{Tr}(\mathbf{P}^T\mathbf{C}_w(\mathbf{P}_k)\mathbf{P})}$$
-
-In contrast to the algorithm in [1], WDA-nepv is derivative-free, thus forgoes heavy costs of computing the derivatives.
-
+* 'WDAgd.py', 'WDAeig.py', and 'WDAnepv.py' are Python implemented codes for each WDA solver.
+* 'WDA_subfunc.py' contains functions that are shared by the WDA solvers.
+* 'WDA_datasets.py' contains datasets that are used in the examples.
+* 'Example1.ipynb' illustrates the advantage of Acc-SK over SK.
+* 'Example2.ipynb' illustrates the convergence behavior of WDA-nepv.
+* 'Example3&4.ipynb' displays the classification accuracy results of WDA-nepv.
+* 'Example5.ipynb' shows the scalability of WDA-nepv.
 
 
 # References
