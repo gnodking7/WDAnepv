@@ -29,12 +29,12 @@ WDA shares the same goal as LDA: derive a linear projection $\mathbf{P}$ such th
 The main difference between WDA and LDA is that
 
 ```
-WDA can dynamically control global and local relations of the data points
+WDA can dynamically control global and local relations of the data vectors
 ```
 
 1. Unlike LDA that treats each data dispersion equally, WDA weighs each data dispersion differently. Specifically, in LDA, while the dispersion $\\|\mathbf{P}^T(\mathbf{x}_i^c-\mathbf{x}_j^{c'})\\|_2^2$ is weighted by a constant $\frac{1}{n_cn\_{c'}}$, in WDA, the dispersion is weighted by ${T}\_{ij}^{c,c'}(\mathbf{P})$.
-2. The weights ${T}\_{ij}^{c,c'}(\mathbf{P})$ are determined as the components of the optimal transport matrix $\mathbf{T}^{c,c'}(\mathbf{P})\in\mathbb{R}^{n_c\times n\_{c'}}$. In short, the optimal transport matrix is computed using the regularized Wasserstein distance[cuturi] as the distance metric for the underlying empirical measure of the data vectors. See Example 1 for a detailed explanation on the optimal transport matrix.
-3. The advantage of WDA is that the hyperparameter $\lambda$ in the optimal transport matrix $\mathbf{T}^{c,c'}(\mathbf{P})$ controls the weights ${T}\_{ij}^{c,c'}(\mathbf{P})$. In particular, small $\lambda$ puts emphasis on global relation of the data vectors while larger $\lambda$ favors locality structure of the data manifold. In fact, when $\lambda=0$ WDA is precisely LDA.
+2. The weights ${T}\_{ij}^{c,c'}(\mathbf{P})$ are determined as the components of the optimal transport matrix $\mathbf{T}^{c,c'}(\mathbf{P})\in\mathbb{R}^{n_c\times n\_{c'}}$. In short, the optimal transport matrix is computed using the regularized Wasserstein distance[3] as the distance metric for the underlying empirical measure of the data vectors. See Example 1 for a detailed explanation on the optimal transport matrix.
+3. The advantage of WDA is the hyperparameter $\lambda$ in the optimal transport matrix $\mathbf{T}^{c,c'}(\mathbf{P})$ that controls the weights ${T}\_{ij}^{c,c'}(\mathbf{P})$. In particular, small $\lambda$ puts emphasis on global relation of the data vectors while larger $\lambda$ favors locality structure of the data manifold. In fact, when $\lambda=0$ WDA is precisely LDA.
 
 In summary, the dispersion of the projected data vectors of different classes is quantified as
 $$\sum\_{c,c'>c}\sum\_{ij}{T}\_{ij}^{c,c'}(\mathbf{P})\\|\mathbf{P}^T(\mathbf{x}_i^c-\mathbf{x}_j^{c'})\\|_2^2$$
@@ -61,17 +61,17 @@ For the matrix $\mathbf{K}^{c,c'}:=\Big([e^{-\lambda\\|\mathbf{P}^T\mathbf{x}_i^
 $$\mathbf{T}^{c,c'}(\mathbf{P})=\mathcal{D}(\mathbf{u})\mathbf{K}\mathcal{D}(\mathbf{v})$$
 where $\mathcal{D}(\cdot)$ denotes a diagonal matrix with vector $\cdot$ as the diagonal.
 
-Such matrix balancing problem can be solved by Sinkhorn-Knopp (SK) algorithm[2] or its accelerated variant (Acc-SK) based on a vector-dependent nonlinear eigenvalue problem (NEPv)[3].
+Such matrix balancing problem can be solved by Sinkhorn-Knopp (SK) algorithm[5] or its accelerated variant (Acc-SK) based on a vector-dependent nonlinear eigenvalue problem (NEPv)[4].
 
-Instead of SK, WDA-nepv uses Acc-SK to compute the optimal transport matrices. In Example 1, we show that SK algorithm is subject to slow convergence or even non-convergence while Acc-SK converges is just a few iterations.
+Instead of SK, WDA-nepv uses Acc-SK to compute the optimal transport matrices. In Example 1, we show that SK algorithm is subject to slow convergence or even non-convergence while Acc-SK converges accurately is just a few iterations.
 
 ### Other existing WDA algorithms
 
-1. WDA-gd[3] uses the steepest descent method from the manifold optimization package Manopt[33] to solve WDA. The optimal transport matrices are computed by SK algorithm and their derivatives by automatic differentiation. As such, there are two downsides of this approach:
+1. WDA-gd[2] uses the steepest descent method from the manifold optimization package Manopt to solve WDA. The optimal transport matrices are computed by SK algorithm and their derivatives by automatic differentiation. As such, there are two downsides of this approach:
 * The optimal transport matrices may be inaccurate, as illustrated in Example 1.
 * Computing the derivatives are quite expensive - the cost grows quadratically in number of data vectors and in the dimension size.
 
-2. WDA-eig[33] proposes a surrogate ratio-trace model
+2. WDA-eig[6] proposes a surrogate ratio-trace model
 $$\max_{\mathbf{P}^T\mathbf{P}=I_p}\mbox{Tr}\bigg((\mathbf{P}^T\mathbf{C}_b(\mathbf{P})\mathbf{P})(\mathbf{P}^T\mathbf{C}_w(\mathbf{P})\mathbf{P})^{-1} \bigg)$$
 to approximate WDA. Then, the following NEPv is further proposed as a solution of the surrogate model
 $$\mathbf{C}_b(\mathbf{P})\mathbf{P}=\mathbf{C}_w(\mathbf{P})\mathbf{P}\Lambda$$
@@ -95,8 +95,8 @@ The following are important distinctions of WDA-nepv from the existing algorithm
 $$\mathbf{C}_b(\mathbf{P}_k) =\widehat{\mathbf{C}}_b(\mathbf{P}_k)\widehat{\mathbf{C}}^T_b(\mathbf{P}_k)\quad\mbox{and}\quad\mathbf{C}_w(\mathbf{P}_k)=\widehat{\mathbf{C}}_w(\mathbf{P}_k) \widehat{\mathbf{C}}^T_w(\mathbf{P}_k)$$
 where $\widehat{\mathbf{C}}_b(\mathbf{P}_k)$ and $\widehat{\mathbf{C}}_w(\mathbf{P}_k)$ have columns 
 $$\sqrt{{T}\_{ij}^{c,c'}(\mathbf{P}_k)}(\mathbf{x}_i^c-\mathbf{x}_j^{c'})\quad\mbox{and}\quad\sqrt{{T}\_{ij}^{c,c}(\mathbf{P}_k)}(\mathbf{x}_i^c-\mathbf{x}_j^{c})$$
-respectively. As level-3 BLAS subroutines, the matrix-matrix multiplications are far more efficient than the original double sums of outer products, which is level-2 BLAS subroutines. See [44] for detailed explanations on level-3 BLAS.
-* After the cross-covariance matrices $\mathbf{C}_b(\mathbf{P}_k)$ and $\mathbf{C}_w(\mathbf{P}_k)$ are efficiently computed by level-3 BLAS, WDA-nepv solves a trace-ratio optimization. Note that, mathematically, this is equivalent to solving LDA. Another NEPv is associated with trace-ratio optimization [55].
+respectively. As level-3 BLAS subroutines, the matrix-matrix multiplications are far more efficient than the original double sums of outer products, which is level-2 BLAS subroutines. See [7] for detailed explanations on level-3 BLAS.
+* After the cross-covariance matrices $\mathbf{C}_b(\mathbf{P}_k)$ and $\mathbf{C}_w(\mathbf{P}_k)$ are efficiently computed by level-3 BLAS, WDA-nepv solves a trace-ratio optimization. Note that, mathematically, the formulation is the same as that of LDA. Another NEPv is associated with trace-ratio optimization.
 
 Both NEPvs (one for Acc-SK and another for trace-ratio) are solved efficiently by the self-consistent field (SCF) iteration, which iteratively fixes the vector-dependence of the matrices and solves the standard eigenvalue problem. See [1] for explicit formulations of the NEPvs and detailed explanation of the implementation of SCF iterations.
 
@@ -125,13 +125,16 @@ WDA-nepv uses Acc-SK algorithm and level-3 BLAS subroutines
 
 # References
 
-[1] 
+[1] Dong Min Roh and Zhaojun Bai. A bi-level nonlinear eigenvector algorithm for Wasserstein discriminant analysis. arXiv preprint arXiv:2211.11891, 2022.
 
-[1] R ́emi Flamary, Marco Cuturi, Nicolas Courty, and Alain Rakotomamonjy. Wasserstein dis
-criminant analysis. Machine Learning, 107(12):1923–1945, 2018.
+[2] Rémi Flamary, Marco Cuturi, Nicolas Courty, and Alain Rakotomamonjy. Wasserstein discriminant analysis. Machine Learning, 107(12):1923–1945, 2018.
 
-[2] Marco Cuturi. Sinkhorn distances: lightspeed computation of optimal transport. In NIPS,
-volume 2, page 4, 2013.
+[3] Marco Cuturi. Sinkhorn distances: lightspeed computation of optimal transport. In NIPS, volume 2, page 4, 2013.
 
-[3] A Aristodemo and L Gemignani. Accelerating the sinkhorn–knopp iteration by arnoldi-type
-methods. Calcolo, 57(1):1–17, 2020.
+[4] A. Aristodemo and L. Gemignani. Accelerating the Sinkhorn–Knopp iteration by Arnoldi-type methods. Calcolo, 57(1):1–17, 2020.
+
+[5] Richard Sinkhorn and Paul Knopp. Concerning nonnegative matrices and doubly stochastic matrices. Pacific Journal of Mathematics, 21(2):343–348, 1967.
+
+[6] Hexuan Liu, Yunfeng Cai, You-Lin Chen, and Ping Li. Ratio trace formulation of Wasserstein discriminant analysis. Advances in Neural Information Processing Systems, 33, 2020.
+
+[7] Jack J. Dongarra, Jeremy Du Croz, Sven Hammarling, and Iain S. Duff. A set of level 3 basic linear algebra subprograms. ACM Transactions on Mathematical Software (TOMS), 16(1):1–17, 1990.
